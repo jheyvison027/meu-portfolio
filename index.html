@@ -35,7 +35,7 @@
     background-image:
       radial-gradient(900px 500px at 85% -10%, rgba(92,115,133,.18), transparent 60%),
       radial-gradient(700px 400px at 0% 10%, rgba(194,155,104,.10), transparent 60%);
-    background-attachment:fixed;
+    background-repeat:no-repeat;
   }
   a{color:inherit;text-decoration:none}
   h1,h2,h3{font-family:'Cinzel',serif;color:var(--text);letter-spacing:.04em}
@@ -69,7 +69,7 @@
   /* NAV */
   nav.tabs{
     position:sticky;top:0;z-index:50;
-    background:rgba(18,22,26,.82);backdrop-filter:blur(12px);
+    background:#12161a;
     border-top:1px solid var(--line);border-bottom:1px solid var(--line);
   }
   nav.tabs ul{
@@ -95,7 +95,7 @@
   .card{
     background:var(--surface);border:1px solid rgba(255,255,255,.04);
     border-radius:var(--radius);padding:28px;
-    box-shadow:0 8px 30px rgba(0,0,0,.25);
+    box-shadow:0 4px 12px rgba(0,0,0,.22);
   }
   .about p+p{margin-top:14px}
   .about .highlights{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:26px}
@@ -375,14 +375,26 @@
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // Realce da aba ativa conforme a rolagem
-  const links = [...document.querySelectorAll('nav.tabs a')];
+  const tabList = document.querySelector('nav.tabs ul');
+  const links = [...tabList.querySelectorAll('a')];
   const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  let currentId = 'sobre';
   const spy = new IntersectionObserver(entries => {
     entries.forEach(e => {
-      if (e.isIntersecting) {
-        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
-        const active = links.find(l => l.classList.contains('active'));
-        if (active) active.scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'});
+      if (!e.isIntersecting || e.target.id === currentId) return;
+      currentId = e.target.id;
+      let active = null;
+      links.forEach(l => {
+        const on = l.getAttribute('href') === '#' + currentId;
+        l.classList.toggle('active', on);
+        if (on) active = l;
+      });
+      // Centraliza a aba ativa só no menu (horizontal), sem tocar na rolagem da página
+      if (active && tabList.scrollWidth > tabList.clientWidth) {
+        tabList.scrollTo({
+          left: active.offsetLeft - (tabList.clientWidth - active.offsetWidth) / 2,
+          behavior: 'auto'
+        });
       }
     });
   }, {rootMargin:'-45% 0px -50% 0px'});
